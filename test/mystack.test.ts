@@ -1,7 +1,7 @@
 import { expect as cdkExpect, haveResource } from '@aws-cdk/assert'
 import { SynthUtils } from '@aws-cdk/assert'
 import * as cdk from '@aws-cdk/core'
-import BuildPipeline from '../src/buildPipeline'
+import { BuildPipeline } from '../src/buildPipeline'
 import * as ssm from '@aws-cdk/aws-ssm'
 
 test('create pipeline', () => {

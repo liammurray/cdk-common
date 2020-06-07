@@ -43,7 +43,7 @@ export interface BuildPipelineProps {
 /**
  * OrdersAPI Pipeline
  */
-export default class BuildPipeline extends cdk.Construct {
+export class BuildPipeline extends cdk.Construct {
   constructor(scope: cdk.Construct, id: string, private readonly props: BuildPipelineProps) {
     super(scope, id)
 
