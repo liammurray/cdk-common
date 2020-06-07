@@ -6,7 +6,7 @@ import * as ssm from '@aws-cdk/aws-ssm'
 test('create pipeline', () => {
   const stack = new cdk.Stack()
 
-  // Makes token that resolves during deployment
+  // Makes token (string) that resolves during deployment
   // For environment that is stored in SSM
   // They show up as "AWS::SSM::Parameter::Value<String>", etc. in CFN template
   const ssmVal = ssm.StringParameter.valueForStringParameter.bind(null, stack)
@@ -14,6 +14,7 @@ test('create pipeline', () => {
   // Needs to include path to npmtoken
   const ssmResources = ['ordersapi', 'common'].map(p => `/cicd/${p}/*`)
 
+  // Params using SSM values can also be read from local env, etc. and passed as plain string
   new BuildPipeline(stack, 'test-build-pipeline', {
     env: {
       region: 'us-west-2',
