@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "description": "Common CDK shared code",
   "main": "./dist/src/index.js",
+  "typings": "./dist/index.d.ts",
   "keywords": [
     "cdk",
     "typescript",
@@ -80,12 +81,12 @@
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/"
   },
-  "repository": "github:liammurray/lib-cdkcommon",
+  "repository": "github:liammurray/cdk-common",
   "files": [
     "dist",
     "package.json"
   ],
   "author": "Liam Murray",
-  "license": "Unlicensed",
+  "license": "UNLICENSED",
   "readme": "./README.md"
 }
