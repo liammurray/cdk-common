@@ -8,7 +8,6 @@
     "typescript",
     "@liammurray/cdk-common"
   ],
-  "private": true,
   "scripts": {
     "audit-checker": "check-audit",
     "audit-resolver": "resolve-audit",
