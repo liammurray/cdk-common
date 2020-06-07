@@ -1,9 +1,9 @@
 {
   "name": "@liammurray/cdk-common",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Common CDK shared code",
   "main": "./dist/src/index.js",
-  "typings": "./dist/index.d.ts",
+  "types": "./dist/src/index.d.ts",
   "keywords": [
     "cdk",
     "typescript",
@@ -83,7 +83,7 @@
   },
   "repository": "github:liammurray/cdk-common",
   "files": [
-    "dist",
+    "dist/src",
     "package.json"
   ],
   "author": "Liam Murray",
