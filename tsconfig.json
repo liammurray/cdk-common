@@ -1,0 +1,42 @@
+{
+  "compilerOptions": {
+    "strictNullChecks": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": false,
+    "sourceMap": true,
+    "experimentalDecorators": true,
+    "strictPropertyInitialization": false,
+    "typeRoots": ["./node_modules/@types"],
+
+    // Base directory to resolve non-absolute module names
+    "baseUrl": "src",
+    // "incremental": true
+    // Generates corresponding '.d.ts' file
+    "declaration": true,
+    // Implies allowSyntheticDefaultImports: true
+    "esModuleInterop": true,
+    "lib": ["es2018"],
+    "module": "commonjs",
+    // Raise error on expressions and declarations with an implied 'any' type.
+    "noImplicitAny": false,
+    // Redirect output structure to the directory
+    "outDir": "dist",
+    // Lookup locations relative to the 'baseUrl'
+    // Makes vscode happy but you still need a module resolver (babel) for complilation.
+    "paths": {
+      "~/*": ["*"]
+    },
+    // ttypescript
+    "plugins": [
+      { "transform": "typescript-transform-paths" },
+      { "transform": "typescript-transform-paths", "afterDeclarations": true }
+    ],
+    "strict": true,
+    "target": "es2018"
+  },
+  "include": ["src/**/*", "test/**/*"]
+}

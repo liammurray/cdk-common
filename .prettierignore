@@ -1,0 +1,7 @@
+dist/
+node_modules/
+lambda/
+.nyc_output/
+.serverless/
+.aws-sam/
+package-lock.json

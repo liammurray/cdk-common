@@ -1,0 +1,4 @@
+dist
+node_modules
+.eslintcache
+!jest.config.js
