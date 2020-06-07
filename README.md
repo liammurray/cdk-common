@@ -27,3 +27,12 @@ npm run test
 npm run test:cov
 # etc.
 ```
+
+## Snapshot tesing
+
+Update snapshot using `run snapshot`
+
+```bash
+npm run snapshot
+npm test
+```

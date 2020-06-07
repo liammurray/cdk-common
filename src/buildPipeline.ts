@@ -11,11 +11,14 @@ import { SecretValue } from '@aws-cdk/core'
  * Pipeline with two stages, dev and live
  * Live requires approval
  */
-export interface PipelineStackProps {
-  readonly env: cdk.Environment
-  // GitHub user
+export interface BuildPipelineProps {
+  /**
+   * GitHub user
+   */
   readonly user: string
-  // GitHub repo
+  /**
+   * GitHub repo
+   */
   readonly repo: string
   readonly branch: string
   // GitHub repo with tools (e.g. maketools)
@@ -41,7 +44,7 @@ export interface PipelineStackProps {
  * OrdersAPI Pipeline
  */
 export default class BuildPipeline extends cdk.Construct {
-  constructor(scope: cdk.Construct, id: string, private readonly props: PipelineStackProps) {
+  constructor(scope: cdk.Construct, id: string, private readonly props: BuildPipelineProps) {
     super(scope, id)
 
     // Where cloned source goes
@@ -127,9 +130,11 @@ export default class BuildPipeline extends cdk.Construct {
       buildSpec: CodeBuild.BuildSpec.fromSourceFilename('buildspec.yml'),
     })
 
+    const { account, region } = cdk.Stack.of(this)
+
     // Allow build to read SSM parameter
     const ssmResources = (props.codeBuildSsmResourcePaths || []).map(
-      p => `arn:aws:ssm:${props.env.region}:${props.env.account}:parameter/${p}`
+      p => `arn:aws:ssm:${region}:${account}:parameter${p}`
     )
     if (ssmResources.length) {
       buildProject.addToRolePolicy(
