@@ -5,8 +5,37 @@ import * as CodePipelineActions from '@aws-cdk/aws-codepipeline-actions'
 import * as cloudformation from '@aws-cdk/aws-cloudformation'
 import * as iam from '@aws-cdk/aws-iam'
 import * as s3 from '@aws-cdk/aws-s3'
+import * as ssm from '@aws-cdk/aws-ssm'
 import { SecretValue } from '@aws-cdk/core'
 
+/**
+ * Default pipeline properties. Assumes certain values
+ * come from SSM paramters.
+ */
+export function makeBaseProps(
+  scope: cdk.Construct,
+  service: string,
+  branch: string
+): BuildPipelineProps {
+  const ssmVal = ssm.StringParameter.valueForStringParameter.bind(null, scope)
+
+  const ssmResources = [service, 'common'].map(p => `/cicd/${p}/*`)
+
+  return {
+    branch,
+    branchTools: branch,
+    repoTools: 'maketools',
+    email: ssmVal('/cicd/common/notification/email'),
+    repo: ssmVal(`/cicd/${service}/github/repo`),
+    user: ssmVal('/cicd/common/github/owner'),
+    npmtoken: '/cicd/common/github/npmtoken',
+    codebuildSecret: cdk.SecretValue.secretsManager('codebuild/github/token'),
+    lambdaBucket: ssmVal('/cicd/common/lambdaBucket'),
+    stackNameDev: `${service}-dev`,
+    stackNameLive: `${service}-live`,
+    codeBuildSsmResourcePaths: ssmResources,
+  }
+}
 /**
  * Pipeline with two stages, dev and live
  * Live requires approval

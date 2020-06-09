@@ -28,6 +28,24 @@ npm run test:cov
 # etc.
 ```
 
+## Developing
+
+In this directory:
+
+```bash
+npm link
+```
+
+In project using this library:
+
+```bash
+npm link @liammurray/cdk-common
+```
+
+For now run `npm run build` every time you make a code change in this directory.
+
+TODO: add watch
+
 ## Snapshot tesing
 
 Update snapshot using `run snapshot`
