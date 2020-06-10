@@ -39,7 +39,7 @@ Object {
           "PrivilegedMode": false,
           "Type": "LINUX_CONTAINER",
         },
-        "Name": "OrdersService",
+        "Name": "UrlShortener",
         "ServiceRole": Object {
           "Fn::GetAtt": Array [
             "testbuildpipelineBuildRole74090BC9",
@@ -144,7 +144,7 @@ Object {
               "Action": "ssm:GetParameters",
               "Effect": "Allow",
               "Resource": Array [
-                "arn:aws:ssm:us-west-2:1234:parameter/cicd/ordersapi/*",
+                "arn:aws:ssm:us-west-2:1234:parameter/cicd/UrlShortener/*",
                 "arn:aws:ssm:us-west-2:1234:parameter/cicd/common/*",
               ],
             },
@@ -637,7 +637,7 @@ Object {
                     Object {
                       "Ref": "AWS::Partition",
                     },
-                    ":cloudformation:us-west-2:1234:stack/orders-dev/*",
+                    ":cloudformation:us-west-2:1234:stack/UrlShortener-dev/*",
                   ],
                 ],
               },
@@ -853,7 +853,7 @@ Object {
                     Object {
                       "Ref": "AWS::Partition",
                     },
-                    ":cloudformation:us-west-2:1234:stack/orders-live/*",
+                    ":cloudformation:us-west-2:1234:stack/UrlShortener-live/*",
                   ],
                 ],
               },
@@ -976,7 +976,7 @@ Object {
                     Object {
                       "Ref": "AWS::Partition",
                     },
-                    ":cloudformation:us-west-2:1234:stack/orders-live/*",
+                    ":cloudformation:us-west-2:1234:stack/UrlShortener-live/*",
                   ],
                 ],
               },
@@ -1095,7 +1095,7 @@ Object {
           },
           "Type": "S3",
         },
-        "Name": "OrdersServiceMaster",
+        "Name": "UrlShortenerMaster",
         "RestartExecutionOnUpdate": true,
         "RoleArn": Object {
           "Fn::GetAtt": Array [
@@ -1231,7 +1231,7 @@ Object {
                       "Arn",
                     ],
                   },
-                  "StackName": "orders-dev",
+                  "StackName": "UrlShortener-dev",
                   "TemplatePath": "buildOutput::cfn-deploy.yml",
                 },
                 "InputArtifacts": Array [
@@ -1271,7 +1271,7 @@ Object {
                       "Arn",
                     ],
                   },
-                  "StackName": "orders-live",
+                  "StackName": "UrlShortener-live",
                   "TemplatePath": "buildOutput::cfn-deploy.yml",
                 },
                 "InputArtifacts": Array [
@@ -1320,7 +1320,7 @@ Object {
                 "Configuration": Object {
                   "ActionMode": "CHANGE_SET_EXECUTE",
                   "ChangeSetName": "OrdersDeployDevChangeSet",
-                  "StackName": "orders-live",
+                  "StackName": "UrlShortener-live",
                 },
                 "Name": "ExecuteChanges",
                 "RoleArn": Object {

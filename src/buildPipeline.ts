@@ -31,6 +31,7 @@ export function makeBaseProps(
     lambdaBucket: 'ssm:/cicd/common/lambdaBucket',
     stackNameDev: `${service}-dev`,
     stackNameLive: `${service}-live`,
+    serviceName: service,
     codeBuildSsmResourcePaths: ssmResources,
   }
 }
@@ -58,10 +59,12 @@ export interface BuildPipelineProps {
   // Secret with GitHub token for CodeBuild (cdk.SecretValue.secretsManager). For pipeline webhook.
   readonly codebuildSecret: SecretValue
   readonly lambdaBucket: string
-  // Name of dev CFN deploy stack (e.g. orders-dev)
+  // Name of dev CFN deploy stack (e.g. OrdersApi-dev)
   readonly stackNameDev: string
-  // Name of dev CFN deploy stack (e.g. orders-live)
+  // Name of dev CFN deploy stack (e.g. OrdersApi-live)
   readonly stackNameLive: string
+  // Name of service (e.g. OrdersApi)
+  readonly serviceName: string
   // Array of SSM param paths that need GetParameters permissions (/cicd/common/*, etc.)
   // Needed for reading npmtoken, etc.
   readonly codeBuildSsmResourcePaths?: string[]
@@ -93,7 +96,7 @@ export class BuildPipeline extends cdk.Construct {
     // Where output goes
     const outputBuild = new CodePipeline.Artifact('buildOutput')
 
-    const serviceName = 'OrdersService'
+    const serviceName = props.serviceName
 
     // External lambda package bucket
     const lambdaBucket = s3.Bucket.fromBucketName(this, 'LambdaBucket', props.lambdaBucket)
