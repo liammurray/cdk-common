@@ -5,10 +5,8 @@ import * as CodePipelineActions from '@aws-cdk/aws-codepipeline-actions'
 import * as cloudformation from '@aws-cdk/aws-cloudformation'
 import * as iam from '@aws-cdk/aws-iam'
 import * as s3 from '@aws-cdk/aws-s3'
-import * as ssm from '@aws-cdk/aws-ssm'
 import { SecretValue } from '@aws-cdk/core'
 import { resolveSsm } from './utils'
-import { StagePlacement } from '@aws-cdk/aws-codepipeline'
 
 /**
  * Default pipeline properties. Assumes certain values
