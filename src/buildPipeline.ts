@@ -7,6 +7,7 @@ import * as iam from '@aws-cdk/aws-iam'
 import * as s3 from '@aws-cdk/aws-s3'
 import * as ssm from '@aws-cdk/aws-ssm'
 import { SecretValue } from '@aws-cdk/core'
+import { StagePlacement } from '@aws-cdk/aws-codepipeline'
 
 /**
  * Default pipeline properties. Assumes certain values
@@ -29,12 +30,28 @@ export function makeBaseProps(
     npmtoken: '/cicd/common/github/npmtoken',
     codebuildSecret: cdk.SecretValue.secretsManager('codebuild/github/token'),
     lambdaBucket: 'ssm:/cicd/common/lambdaBucket',
-    stackNameDev: `${service}-dev`,
-    stackNameLive: `${service}-live`,
+    stageDev: {
+      stackName: `${service}-dev`,
+    },
+    stageLive: {
+      stackName: `${service}-live`,
+    },
     serviceName: service,
     codeBuildSsmResourcePaths: ssmResources,
   }
 }
+
+export interface DeployStageProps {
+  // Name of dev CFN deploy stack (e.g. OrdersApi-dev)
+  readonly stackName: string
+  /**
+   * Defaults to cfn-deploy.yml
+   * SAM uses one template with stage paramter
+   * CDK uses two templates, one per stage (and should set this)
+   */
+  readonly deployTemplate?: string
+}
+
 /**
  * Pipeline with two stages, dev and live
  * Live requires approval
@@ -59,10 +76,10 @@ export interface BuildPipelineProps {
   // Secret with GitHub token for CodeBuild (cdk.SecretValue.secretsManager). For pipeline webhook.
   readonly codebuildSecret: SecretValue
   readonly lambdaBucket: string
-  // Name of dev CFN deploy stack (e.g. OrdersApi-dev)
-  readonly stackNameDev: string
-  // Name of dev CFN deploy stack (e.g. OrdersApi-live)
-  readonly stackNameLive: string
+  // Dev deploy stage always exists
+  readonly stageDev: DeployStageProps
+  // Optional live stage with approval
+  readonly stageLive?: DeployStageProps
   // Name of service (e.g. OrdersApi)
   readonly serviceName: string
   // Array of SSM param paths that need GetParameters permissions (/cicd/common/*, etc.)
@@ -197,6 +214,7 @@ export class BuildPipeline extends cdk.Construct {
       })
     )
 
+    // Used by SAM build (one template for both stages)
     const cfnDeployTemplate = 'cfn-deploy.yml'
 
     const actionBuild = new CodePipelineActions.CodeBuildAction({
@@ -212,6 +230,7 @@ export class BuildPipeline extends cdk.Construct {
           type: CodeBuild.BuildEnvironmentVariableType.PLAINTEXT,
           value: this.props.npmtoken,
         },
+        // Only used by SAM single template
         SAM_DEPLOY_TEMPLATE: {
           value: cfnDeployTemplate,
         },
@@ -235,9 +254,18 @@ export class BuildPipeline extends cdk.Construct {
 
     const commitInfo = `${actionSource.variables.branchName}_${actionSource.variables.commitId}`
 
-    this.addStageDeployDev(pipeline, outputBuild, cfnDeployTemplate, commitInfo)
-    this.addStageDeployLive(pipeline, outputBuild, cfnDeployTemplate, commitInfo)
-
+    const stageDev: DeployStageProps = {
+      deployTemplate: cfnDeployTemplate,
+      ...props.stageDev,
+    }
+    this.addStageDeployDev(pipeline, outputBuild, stageDev, commitInfo)
+    if (props.stageLive) {
+      const stageLive: DeployStageProps = {
+        deployTemplate: cfnDeployTemplate,
+        ...props.stageLive,
+      }
+      this.addStageDeployLive(pipeline, outputBuild, stageLive, commitInfo)
+    }
     // Lambda needs to grant permission to events
     //  https://docs.aws.amazon.com/lambda/latest/dg/services-cloudwatchevents.html
     // const funcName = Fn.importValue('GitHubBuildStatusLambdaName')
@@ -249,9 +277,13 @@ export class BuildPipeline extends cdk.Construct {
   private addStageDeployDev(
     pipeline: CodePipeline.Pipeline,
     buildArtifact: CodePipeline.Artifact,
-    deployTemplate: string,
+    stage: DeployStageProps,
     commitInfo: string
   ): void {
+    if (!stage.deployTemplate) {
+      throw new Error('Missing deploy template name')
+    }
+
     const capabilities = [
       cloudformation.CloudFormationCapabilities.AUTO_EXPAND,
       cloudformation.CloudFormationCapabilities.NAMED_IAM,
@@ -259,7 +291,7 @@ export class BuildPipeline extends cdk.Construct {
 
     const deploy = new CodePipelineActions.CloudFormationCreateUpdateStackAction({
       actionName: 'DeployDevStack',
-      stackName: this.props.stackNameDev,
+      stackName: stage.stackName,
       capabilities,
       adminPermissions: true,
       replaceOnFailure: true,
@@ -267,7 +299,7 @@ export class BuildPipeline extends cdk.Construct {
         ApiStage: 'dev',
         CommitInfo: commitInfo,
       },
-      templatePath: buildArtifact.atPath(deployTemplate),
+      templatePath: buildArtifact.atPath(stage.deployTemplate),
     })
     pipeline.addStage({
       stageName: 'DeployDev',
@@ -278,9 +310,12 @@ export class BuildPipeline extends cdk.Construct {
   private addStageDeployLive(
     pipeline: CodePipeline.Pipeline,
     buildArtifact: CodePipeline.Artifact,
-    deployTemplate: string,
+    stage: DeployStageProps,
     commitInfo: string
   ): void {
+    if (!stage.deployTemplate) {
+      throw new Error('Missing deploy template name')
+    }
     const changeSetName = 'OrdersDeployDevChangeSet'
 
     const email = this.props.email
@@ -292,7 +327,7 @@ export class BuildPipeline extends cdk.Construct {
 
     const changes = new CodePipelineActions.CloudFormationCreateReplaceChangeSetAction({
       actionName: 'PrepareChanges',
-      stackName: this.props.stackNameLive,
+      stackName: stage.stackName,
       changeSetName,
       capabilities,
       adminPermissions: true,
@@ -300,7 +335,7 @@ export class BuildPipeline extends cdk.Construct {
         ApiStage: 'live',
         CommitInfo: commitInfo,
       },
-      templatePath: buildArtifact.atPath(deployTemplate),
+      templatePath: buildArtifact.atPath(stage.deployTemplate),
       runOrder: 1,
     })
 
@@ -313,7 +348,7 @@ export class BuildPipeline extends cdk.Construct {
 
     const execute = new CodePipelineActions.CloudFormationExecuteChangeSetAction({
       actionName: 'ExecuteChanges',
-      stackName: this.props.stackNameLive,
+      stackName: stage.stackName,
       changeSetName,
       runOrder: 3,
     })
