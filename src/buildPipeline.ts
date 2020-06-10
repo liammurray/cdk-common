@@ -7,6 +7,7 @@ import * as iam from '@aws-cdk/aws-iam'
 import * as s3 from '@aws-cdk/aws-s3'
 import * as ssm from '@aws-cdk/aws-ssm'
 import { SecretValue } from '@aws-cdk/core'
+import { resolveSsm } from './utils'
 import { StagePlacement } from '@aws-cdk/aws-codepipeline'
 
 /**
@@ -96,15 +97,8 @@ export class BuildPipeline extends cdk.Construct {
   constructor(scope: cdk.Construct, id: string, private readonly props: BuildPipelineProps) {
     super(scope, id)
 
-    const ssmVal = ssm.StringParameter.valueForStringParameter.bind(null, scope)
-
-    // Expand "ssm:" entries. This is deferred because they are validated up front.
-    const SSM_SCHEME = 'ssm:'
-    for (const [key, val] of Object.entries(props)) {
-      if (typeof val == 'string' && val.startsWith(SSM_SCHEME)) {
-        props[key] = ssmVal(val.slice(SSM_SCHEME.length))
-      }
-    }
+    // Expand "ssm:" entries
+    resolveSsm(scope, props)
 
     // Where cloned source goes
     const outputSources = new CodePipeline.Artifact('src')
