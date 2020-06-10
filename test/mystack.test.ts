@@ -26,7 +26,8 @@ test('create pipeline', () => {
     branch: 'master',
     branchTools: 'master',
     repoTools: 'maketools',
-    email: ssmVal('/cicd/common/notification/email'),
+    // Alternative syntax
+    email: 'ssm:/cicd/common/notification/email',
     repo: ssmVal('/cicd/ordersapi/github/repo'),
     user: ssmVal('/cicd/common/github/owner'),
     npmtoken: '/cicd/common/github/npmtoken',

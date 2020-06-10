@@ -17,20 +17,18 @@ export function makeBaseProps(
   service: string,
   branch: string
 ): BuildPipelineProps {
-  const ssmVal = ssm.StringParameter.valueForStringParameter.bind(null, scope)
-
   const ssmResources = [service, 'common'].map(p => `/cicd/${p}/*`)
 
   return {
     branch,
     branchTools: branch,
     repoTools: 'maketools',
-    email: ssmVal('/cicd/common/notification/email'),
-    repo: ssmVal(`/cicd/${service}/github/repo`),
-    user: ssmVal('/cicd/common/github/owner'),
+    email: 'ssm:/cicd/common/notification/email',
+    repo: `ssm:/cicd/${service}/github/repo`,
+    user: 'ssm:/cicd/common/github/owner',
     npmtoken: '/cicd/common/github/npmtoken',
     codebuildSecret: cdk.SecretValue.secretsManager('codebuild/github/token'),
-    lambdaBucket: ssmVal('/cicd/common/lambdaBucket'),
+    lambdaBucket: 'ssm:/cicd/common/lambdaBucket',
     stackNameDev: `${service}-dev`,
     stackNameLive: `${service}-live`,
     codeBuildSsmResourcePaths: ssmResources,
@@ -73,8 +71,20 @@ export interface BuildPipelineProps {
  * OrdersAPI Pipeline
  */
 export class BuildPipeline extends cdk.Construct {
+  // private readonly props: BuildPipelineProps
+
   constructor(scope: cdk.Construct, id: string, private readonly props: BuildPipelineProps) {
     super(scope, id)
+
+    const ssmVal = ssm.StringParameter.valueForStringParameter.bind(null, scope)
+
+    // Expand "ssm:" entries. This is deferred because they are validated up front.
+    const SSM_SCHEME = 'ssm:'
+    for (const [key, val] of Object.entries(props)) {
+      if (typeof val == 'string' && val.startsWith(SSM_SCHEME)) {
+        props[key] = ssmVal(val.slice(SSM_SCHEME.length))
+      }
+    }
 
     // Where cloned source goes
     const outputSources = new CodePipeline.Artifact('src')
