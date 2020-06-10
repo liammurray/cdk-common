@@ -87,7 +87,7 @@ export interface BuildPipelineProps {
 }
 
 /**
- * OrdersAPI Pipeline
+ * Build Pipeline
  */
 export class BuildPipeline extends cdk.Construct {
   // private readonly props: BuildPipelineProps
@@ -191,7 +191,12 @@ export class BuildPipeline extends cdk.Construct {
       buildProject.addToRolePolicy(
         new iam.PolicyStatement({
           effect: iam.Effect.ALLOW,
-          actions: ['ssm:GetParameters'],
+          actions: [
+            'ssm:GetParameters',
+            'ssm:GetParameter',
+            'ssm:DescribeParamters',
+            'ssm:GetParameterHistory',
+          ],
           resources: ssmResources,
         })
       )
