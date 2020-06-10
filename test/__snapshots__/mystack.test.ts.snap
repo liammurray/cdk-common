@@ -141,7 +141,12 @@ Object {
               },
             },
             Object {
-              "Action": "ssm:GetParameters",
+              "Action": Array [
+                "ssm:GetParameters",
+                "ssm:GetParameter",
+                "ssm:DescribeParamters",
+                "ssm:GetParameterHistory",
+              ],
               "Effect": "Allow",
               "Resource": Array [
                 "arn:aws:ssm:us-west-2:1234:parameter/cicd/UrlShortener/*",
