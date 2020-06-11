@@ -75,6 +75,8 @@ export interface BuildPipelineProps {
   // Secret with GitHub token for CodeBuild (cdk.SecretValue.secretsManager). For pipeline webhook.
   readonly codebuildSecret: SecretValue
   readonly lambdaBucket: string
+  // Name of buildspec (default buildspec.yml)
+  readonly buildSpec?: string
   // Dev deploy stage always exists
   readonly stageDev: DeployStageProps
   // Optional live stage with approval
@@ -125,6 +127,9 @@ export class BuildPipeline extends cdk.Construct {
       branch: props.branch,
     })
 
+    // See CodeBuild filter (for filtering hook based on path, etc.)
+    //  https://docs.aws.amazon.com/cdk/api/latest/docs/@aws-cdk_aws-codebuild.GitHubSourceProps.html
+    //
     // https://github.com/aws/aws-cdk/blob/d7c40c5e6209de320d2b89f27e8684bebce35cf0/packages/@aws-cdk/aws-codepipeline-actions/lib/github/source-action.ts#L123
     // Created internally. We can set modify 'filters'
     // AWS::CodePipeline::Webhook
@@ -178,7 +183,7 @@ export class BuildPipeline extends cdk.Construct {
         buildImage: CodeBuild.LinuxBuildImage.STANDARD_4_0,
         computeType: CodeBuild.ComputeType.SMALL,
       },
-      buildSpec: CodeBuild.BuildSpec.fromSourceFilename('buildspec.yml'),
+      buildSpec: CodeBuild.BuildSpec.fromSourceFilename(props.buildSpec || 'buildspec.yml'),
     })
 
     const { account, region } = cdk.Stack.of(this)
